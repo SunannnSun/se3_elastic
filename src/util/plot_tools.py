@@ -1,10 +1,9 @@
 from mpl_toolkits.mplot3d import axes3d
-from matplotlib.patches import Circle, PathPatch
+from matplotlib.patches import Circle, PathPatch, RegularPolygon
 import matplotlib.pyplot as plt
 from matplotlib.transforms import Affine2D
 from mpl_toolkits.mplot3d import art3d
 import numpy as np
-
 
 
 
@@ -16,6 +15,8 @@ def plot_vector(fig, orig, v, color='blue'):
    ax.set_xlim(0,10);ax.set_ylim(0,10);ax.set_zlim(0,10)
    ax = fig.gca(projection='3d')  
    return fig
+
+
 
 def rotation_matrix(d):
     sin_angle = np.linalg.norm(d)
@@ -29,6 +30,8 @@ def rotation_matrix(d):
 
     M = ddt + np.sqrt(1 - sin_angle**2) * (eye - ddt) + sin_angle * skew
     return M
+
+
 
 def pathpatch_2d_to_3d(pathpatch, z, normal):
     if type(normal) is str: #Translate strings to normal vectors
@@ -52,23 +55,41 @@ def pathpatch_2d_to_3d(pathpatch, z, normal):
 
     pathpatch._segment3d = np.array([np.dot(M, (x, y, 0)) + (0, 0, z) for x, y in verts])
 
+
+
 def pathpatch_translate(pathpatch, delta):
     pathpatch._segment3d += delta
 
+
+
 def plot_plane(ax, point, normal, size=10, color='y'):    
     p = Circle((0, 0), size, facecolor = color, alpha = .2)
+    p = RegularPolygon((0, 0), 4, radius=size, orientation=0, color='gray', alpha=0.1)
+
     ax.add_patch(p)
     pathpatch_2d_to_3d(p, z=0, normal=normal)
     pathpatch_translate(p, (point[0], point[1], point[2]))
 
 
-o = np.array([5,5,5])
-v = np.array([3,3,3])
-n = [0.5, 0.5, 0.5]
 
-from mpl_toolkits.mplot3d import Axes3D
-fig = plt.figure()
-ax = fig.add_subplot(projection='3d')
-plot_plane(ax, o, n, size=3)    
-ax.set_xlim(0,10);ax.set_ylim(0,10);ax.set_zlim(0,10)
-plt.show()
+
+def plot_unit_sphere(ax):
+    # Parametric equations for a sphere
+    u = np.linspace(0, 2 * np.pi, 100)
+    v = np.linspace(0, np.pi, 100)
+    x = np.outer(np.cos(u), np.sin(v))
+    y = np.outer(np.sin(u), np.sin(v))
+    z = np.outer(np.ones(np.size(u)), np.cos(v))
+    
+    # Plot the sphere
+    ax.plot_surface(x, y, z, color=(0, 0, 0, 0),  edgecolor=(0, 0, 0, 0.05),  rstride=8, cstride=8)
+
+
+
+def plot_points_on_sphere(ax, points, color='r'):
+    # Plot 3D points on the sphere
+    x = points[:, 0]
+    y = points[:, 1]
+    z = points[:, 2]
+    
+    ax.scatter(x, y, z, color=color, s=0.5, label='Data Points')
