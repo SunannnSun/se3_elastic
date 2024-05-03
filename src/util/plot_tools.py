@@ -8,6 +8,53 @@ import numpy as np
 
 
 
+def plot_unit_sphere():
+    fig = plt.figure(figsize=(8, 8))
+    ax = fig.add_subplot(111, projection='3d')
+
+    u = np.linspace(0, 2 * np.pi, 100)
+    v = np.linspace(0, np.pi, 100)
+    x = np.outer(np.cos(u), np.sin(v))
+    y = np.outer(np.sin(u), np.sin(v))
+    z = np.outer(np.ones(np.size(u)), np.cos(v))
+    
+    # Plot the sphere
+    ax.plot_surface(x, y, z, color=(0, 0, 0, 0),  edgecolor=(0, 0, 0, 0.05),  rstride=8, cstride=8)
+    
+    ax.xaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
+    ax.yaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
+    ax.zaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
+
+    ax.set_axis_off()
+
+    ax.set_aspect('equal')
+    
+    return ax
+
+
+
+def plot_plane(ax, point, normal, size=10, color='y'):    
+    p = Circle((0, 0), size, facecolor = color, alpha = .2)
+    p = RegularPolygon((0, 0), 4, radius=size, orientation=0, color='gray', alpha=0.1)
+
+    ax.add_patch(p)
+    pathpatch_2d_to_3d(p, z=0, normal=normal)
+    pathpatch_translate(p, (point[0], point[1], point[2]))
+
+
+
+def plot_points_on_sphere(ax, points, color='r'):
+    # Plot 3D points on the sphere
+    x = points[:, 0]
+    y = points[:, 1]
+    z = points[:, 2]
+    
+    ax.scatter(x, y, z, color=color, s=0.5, label='Data Points')
+
+
+
+
+
 def plot_vector(fig, orig, v, color='blue'):
    ax = fig.add_subplot(projection='3d')
    orig = np.array(orig); v=np.array(v)
@@ -62,34 +109,5 @@ def pathpatch_translate(pathpatch, delta):
 
 
 
-def plot_plane(ax, point, normal, size=10, color='y'):    
-    p = Circle((0, 0), size, facecolor = color, alpha = .2)
-    p = RegularPolygon((0, 0), 4, radius=size, orientation=0, color='gray', alpha=0.1)
-
-    ax.add_patch(p)
-    pathpatch_2d_to_3d(p, z=0, normal=normal)
-    pathpatch_translate(p, (point[0], point[1], point[2]))
 
 
-
-
-def plot_unit_sphere(ax):
-    # Parametric equations for a sphere
-    u = np.linspace(0, 2 * np.pi, 100)
-    v = np.linspace(0, np.pi, 100)
-    x = np.outer(np.cos(u), np.sin(v))
-    y = np.outer(np.sin(u), np.sin(v))
-    z = np.outer(np.ones(np.size(u)), np.cos(v))
-    
-    # Plot the sphere
-    ax.plot_surface(x, y, z, color=(0, 0, 0, 0),  edgecolor=(0, 0, 0, 0.05),  rstride=8, cstride=8)
-
-
-
-def plot_points_on_sphere(ax, points, color='r'):
-    # Plot 3D points on the sphere
-    x = points[:, 0]
-    y = points[:, 1]
-    z = points[:, 2]
-    
-    ax.scatter(x, y, z, color=color, s=0.5, label='Data Points')
