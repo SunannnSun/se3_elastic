@@ -1,0 +1,5 @@
+matplotlib
+numpy
+scipy
+scikit-learn
+pyLasaDataset==0.1.1
