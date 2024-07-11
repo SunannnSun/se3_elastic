@@ -1,113 +1,120 @@
-from mpl_toolkits.mplot3d import axes3d
-from matplotlib.patches import Circle, PathPatch, RegularPolygon
-import matplotlib.pyplot as plt
-from matplotlib.transforms import Affine2D
-from mpl_toolkits.mplot3d import art3d
 import numpy as np
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+from matplotlib.ticker import MaxNLocator
+from matplotlib.ticker import FormatStrFormatter
+from scipy.spatial.transform import Rotation as R
+import random
+
+
+font = {'family' : 'Times New Roman',
+         'size'   : 18
+         }
+mpl.rc('font', **font)
 
 
 
 
-def plot_unit_sphere():
-    fig = plt.figure(figsize=(8, 8))
-    ax = fig.add_subplot(111, projection='3d')
+def demo_vs_adjust(demo, adjust, old_anchor, new_anchor, q_in, new_ori):
 
-    u = np.linspace(0, 2 * np.pi, 100)
-    v = np.linspace(0, np.pi, 100)
-    x = np.outer(np.cos(u), np.sin(v))
-    y = np.outer(np.sin(u), np.sin(v))
-    z = np.outer(np.ones(np.size(u)), np.cos(v))
-    
-    # Plot the sphere
-    ax.plot_surface(x, y, z, color=(0, 0, 0, 0),  edgecolor=(0, 0, 0, 0.05),  rstride=8, cstride=8)
-    
+    fig = plt.figure(figsize=(12, 10))
+    ax = fig.add_subplot(projection='3d')
+
+    ax.plot(demo[:, 0], demo[:, 1], demo[:, 2], 'o', color='gray', alpha=0.2, markersize=1.5, label="Demonstration")
+    ax.plot(adjust[:, 0], adjust[:, 1], adjust[:, 2], 'o', color='red', alpha=0.2, markersize=1.5, label="Adjusted")
+
+    ax.scatter(demo[0, 0], demo[0, 1], demo[0, 2], 'o', facecolors='none', edgecolors='magenta',linewidth=2,  s=100, label="Initial")
+    ax.scatter(demo[-1, 0], demo[-1, 1], demo[-1, 2], marker=(8, 2, 0), color='k',  s=100, label="Target")
+
+    for i in range(old_anchor.shape[0]):
+        ax.scatter(old_anchor[i, 0], old_anchor[i, 1], old_anchor[i, 2], 'o', facecolors='none', edgecolors='black',linewidth=2,  s=100)
+
+    for i in range(new_anchor.shape[0]):
+        ax.scatter(new_anchor[i, 0], new_anchor[i, 1], new_anchor[i, 2], 'o', facecolors='none', edgecolors='red',linewidth=2,  s=100)
+
+    colors = ("#FF6666", "#005533", "#1199EE")  # Colorblind-safe RGB
+    x_min, x_max = ax.get_xlim()
+    scale = (x_max - x_min)/4
+    for i in np.linspace(0, len(q_in), num=20, endpoint=False, dtype=int):
+        r = q_in[i]
+        loc = demo[i, :]
+        for j, (axis, c) in enumerate(zip((ax.xaxis, ax.yaxis, ax.zaxis),
+                                            colors)):
+            line = np.zeros((2, 3))
+            line[1, j] = scale
+            line_rot = r.apply(line)
+            line_plot = line_rot + loc
+            ax.plot(line_plot[:, 0], line_plot[:, 1], line_plot[:, 2], c, alpha=0.3,linewidth=1)
+
+    for i in np.linspace(0, len(new_ori), num=20, endpoint=False, dtype=int):
+        r = new_ori[i]
+        loc = adjust[i, :]
+        for j, (axis, c) in enumerate(zip((ax.xaxis, ax.yaxis, ax.zaxis),
+                                            colors)):
+            line = np.zeros((2, 3))
+            line[1, j] = scale
+            line_rot = r.apply(line)
+            line_plot = line_rot + loc
+            ax.plot(line_plot[:, 0], line_plot[:, 1], line_plot[:, 2], c,  linewidth=1)
+
+    ax.axis('equal')
+    ax.legend(ncol=4, loc="upper center")
+
+    ax.set_xlabel(r'$\xi_1$', labelpad=20)
+    ax.set_ylabel(r'$\xi_2$', labelpad=20)
+    ax.set_zlabel(r'$\xi_3$', labelpad=20)
+    ax.xaxis.set_major_locator(MaxNLocator(nbins=4))
+    ax.yaxis.set_major_locator(MaxNLocator(nbins=4))
+    ax.zaxis.set_major_locator(MaxNLocator(nbins=4))
+
     ax.xaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
     ax.yaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
     ax.zaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
 
-    ax.set_axis_off()
-
-    ax.set_aspect('equal')
-    
-    return ax
-
-
-
-def plot_plane(ax, point, normal, size=10, color='y'):    
-    p = Circle((0, 0), size, facecolor = color, alpha = .2)
-    p = RegularPolygon((0, 0), 4, radius=size, orientation=0, color='gray', alpha=0.1)
-
-    ax.add_patch(p)
-    pathpatch_2d_to_3d(p, z=0, normal=normal)
-    pathpatch_translate(p, (point[0], point[1], point[2]))
-
-
-
-def plot_points_on_sphere(ax, points, color='r'):
-    # Plot 3D points on the sphere
-    x = points[:, 0]
-    y = points[:, 1]
-    z = points[:, 2]
-    
-    ax.scatter(x, y, z, color=color, s=0.5, label='Data Points')
 
 
 
 
+def demo_vs_adjust_gmm(p_in, demo, gmm, old_gmm_struct, new_ori, gmm_struct):
 
-def plot_vector(fig, orig, v, color='blue'):
-   ax = fig.add_subplot(projection='3d')
-   orig = np.array(orig); v=np.array(v)
-   ax.quiver(orig[0], orig[1], orig[2], v[0], v[1], v[2],color=color)
-   ax.set_xlim(0,10);ax.set_ylim(0,10);ax.set_zlim(0,10)
-   ax = fig.gca(projection='3d')  
-   return fig
+    label = gmm.assignment_arr
+    K     = gmm.K
 
+    colors = ["r", "g", "b", "k", 'c', 'm', 'y', 'crimson', 'lime'] + [
+    "#" + ''.join([random.choice('0123456789ABCDEF') for j in range(6)]) for i in range(200)]
 
+    color_mapping = np.take(colors, label)
 
-def rotation_matrix(d):
-    sin_angle = np.linalg.norm(d)
-    if sin_angle == 0:return np.identity(3)
-    d /= sin_angle
-    eye = np.eye(3)
-    ddt = np.outer(d, d)
-    skew = np.array([[    0,  d[2],  -d[1]],
-                  [-d[2],     0,  d[0]],
-                  [d[1], -d[0],    0]], dtype=np.float64)
+    fig = plt.figure(figsize=(12, 10))
+    ax = fig.add_subplot(projection='3d')
 
-    M = ddt + np.sqrt(1 - sin_angle**2) * (eye - ddt) + sin_angle * skew
-    return M
+    ax.scatter(p_in[:, 0], p_in[:, 1], p_in[:, 2], 'o', color=color_mapping[:], s=1, alpha=0.4, label="Demonstration")
 
+    colors = ("#FF6666", "#005533", "#1199EE")  # Colorblind-safe RGB
 
+    x_min, x_max = ax.get_xlim()
+    scale = (x_max - x_min)/4
+    for k in range(K):
+        loc = old_gmm_struct["Mu"][:, k]
+        ax.text(loc[0], loc[1], loc[2], str(k + 1), fontsize=20)
 
-def pathpatch_2d_to_3d(pathpatch, z, normal):
-    if type(normal) is str: #Translate strings to normal vectors
-        index = "xyz".index(normal)
-        normal = np.roll((1.0,0,0), index)
+    ax.scatter(p_in[:, 0], p_in[:, 1], p_in[:, 2], 'o', color=color_mapping[:], s=1, alpha=0.4, label="Demonstration")
 
-    normal /= np.linalg.norm(normal) #Make sure the vector is normalised
-    path = pathpatch.get_path() #Get the path and the associated transform
-    trans = pathpatch.get_patch_transform()
+    for k in range(K):
+        loc = gmm_struct["Mu"][:, k]
+        ax.text(loc[0], loc[1], loc[2], str(k + 1), fontsize=20)
 
-    path = trans.transform_path(path) #Apply the transform
+    ax.axis('equal')
 
-    pathpatch.__class__ = art3d.PathPatch3D #Change the class
-    pathpatch._code3d = path.codes #Copy the codes
-    pathpatch._facecolor3d = pathpatch.get_facecolor #Get the face color    
+    ax.set_xlabel(r'$\xi_1$', labelpad=20)
+    ax.set_ylabel(r'$\xi_2$', labelpad=20)
+    ax.set_zlabel(r'$\xi_3$', labelpad=20)
+    ax.xaxis.set_major_locator(MaxNLocator(nbins=4))
+    ax.yaxis.set_major_locator(MaxNLocator(nbins=4))
+    ax.zaxis.set_major_locator(MaxNLocator(nbins=4))
 
-    verts = path.vertices #Get the vertices in 2D
-
-    d = np.cross(normal, (0, 0, 1)) #Obtain the rotation vector    
-    M = rotation_matrix(d) #Get the rotation matrix
-
-    pathpatch._segment3d = np.array([np.dot(M, (x, y, 0)) + (0, 0, z) for x, y in verts])
-
-
-
-def pathpatch_translate(pathpatch, delta):
-    pathpatch._segment3d += delta
-
-
-
-
+    ax.xaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
+    ax.yaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
+    ax.zaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
 
