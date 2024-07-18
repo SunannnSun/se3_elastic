@@ -26,7 +26,7 @@ class elastic_pos_class:
         self.p_out = p_out
         self.data = np.hstack((p_in, p_out))
 
-        K = int(len(Prior_list) / 2)
+        K = len(Prior_list)
         N = 3
 
         Prior = np.zeros((K))
@@ -34,11 +34,12 @@ class elastic_pos_class:
         Sigma = np.zeros((K, N, N))
 
         for k in range(K):
-            Prior[k] = Prior_list[k] * 2
-            Mu[:, k] = Mu_list[k][0]
-            Sigma[k, :, :] = Sigma_list[k][:N, :N]
+            Prior[k] = Prior_list[k]
+            Mu[:, k] = Mu_list[k, :]
+            Sigma[k, :, :] = Sigma_list[k, :, :]
 
         self.old_gmm_struct = _rearrange_clusters(Prior, Mu, Sigma, p_att)
+
 
 
     def _geo_constr(self):

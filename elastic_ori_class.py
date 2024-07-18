@@ -54,9 +54,9 @@ class elastic_ori_class:
 
         for k in range(K):
             Prior[k] = Prior_list[k] * 2
-            Mu_k, _, _, _  = np.linalg.lstsq(normal_basis, Mu_list[k][1].as_quat(), rcond=None)
+            Mu_k, _, _, _  = np.linalg.lstsq(normal_basis, Mu_list[k].as_quat(), rcond=None)
             Mu[:, k] = Mu_k
-            Sigma[k, :, :] = normal_basis.T @ Sigma_list[k][N:, N:] @ normal_basis
+            Sigma[k, :, :] = normal_basis.T @ Sigma_list[k] @ normal_basis
 
         self.old_gmm_struct = _rearrange_clusters(Prior, Mu, Sigma, np.zeros((3, )))
 
