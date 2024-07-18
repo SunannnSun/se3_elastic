@@ -20,7 +20,7 @@ def _rearrange_clusters(Prior, Mu, Sigma, att):
 
 
 
-class elastic_class:
+class elastic_pos_class:
     def __init__(self, Prior_list, Mu_list, Sigma_list, p_att, p_in, p_out) -> None:
         self.p_in = p_in
         self.p_out = p_out
@@ -42,7 +42,7 @@ class elastic_class:
 
 
     def _geo_constr(self):
-
+        # v1 = np.random.rand(3,)
         v1 = self.p_in[25] - self.p_in[0]
         v1 /= np.linalg.norm(v1)
         v2 = np.cross(v1, np.array([0, 1, 0]))

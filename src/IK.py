@@ -3,16 +3,17 @@ import cvxpy as cp
 
 
 
-def solveIK(anchor_arr, target_start_T, target_end_T, traj_dis) -> None:
+def solveIK(anchor_arr, target_start_T, target_end_T, traj_dis, scale_ratio=None) -> None:
     dim = anchor_arr.shape[1]
 
     constraints = [anchor_arr[0]]
     constraints_idx = [0]
 
-    if target_start_T is not None and target_end_T is not None:
-        scale_ratio = (np.linalg.norm(target_start_T[0:dim, -1] - target_end_T[0:dim, -1]))/(traj_dis)
-    else:
-        scale_ratio = 1.0
+    if scale_ratio is None:
+        if target_start_T is not None and target_end_T is not None:
+            scale_ratio = (np.linalg.norm(target_start_T[0:dim, -1] - target_end_T[0:dim, -1]))/(traj_dis)
+        else:
+            scale_ratio = 1.0
 
     if target_start_T is not None:
         constraints[-1] = target_start_T[0:dim, -1]

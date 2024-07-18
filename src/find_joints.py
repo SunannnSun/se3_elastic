@@ -9,7 +9,6 @@ def get_product_gaussian(mu1, mu2, sigma1, sigma2):
     return max_pos, combine_sigma
 
 
-
 def get_joints(mu, sigma, start, end):
     jnt_arr = []
 

@@ -1,7 +1,5 @@
 numpy
+cvxpy
 matplotlib
 scipy
-cvxpy
-dtw
 Mosek
-casadi

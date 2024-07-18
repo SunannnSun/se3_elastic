@@ -1,6 +1,6 @@
 import numpy as np
 
-from .gaussian_kinematics import GaussianKinematics, GaussianKinematics3D
+from .gaussian_kinematics import GaussianKinematics3D
 from .find_joints import get_joints
 from .IK import solveIK, solveTraj
 
@@ -25,7 +25,7 @@ def _get_dt(Data, dim):
 
 
 
-def start_adapting(traj, gmm, target_start_pose, target_end_pose, dt=None):
+def start_adapting(traj, gmm, target_start_pose, target_end_pose, dt=None, scale_ratio=None):
     """
     Require listed trajectory (no rollout) of stacked position and velocity
 
@@ -58,17 +58,14 @@ def start_adapting(traj, gmm, target_start_pose, target_end_pose, dt=None):
     mu = mu[::-1]
     sigma = sigma[::-1]
 
-    if dim == 2:
-        gk = GaussianKinematics(pi, mu, sigma, anchor_arr)
-    else:
-        gk = GaussianKinematics3D(pi, mu, sigma, anchor_arr)
+    gk = GaussianKinematics3D(pi, mu, sigma, anchor_arr)
 
     traj_dis = np.linalg.norm(end_point - start_point)
 
     if dt is None:
         dt = _get_dt(traj, dim)
 
-    new_anchor_point = solveIK(anchor_arr, target_start_pose, target_end_pose, traj_dis)  # solve for new anchor points
+    new_anchor_point = solveIK(anchor_arr, target_start_pose, target_end_pose, traj_dis, scale_ratio)  # solve for new anchor points
     _, mean_arr, cov_arr = gk.update_gaussian_transforms(new_anchor_point)
     new_gmm = {
         "Mu": mean_arr.T,
@@ -80,6 +77,7 @@ def start_adapting(traj, gmm, target_start_pose, target_end_pose, dt=None):
     plot_traj, traj_dot_arr = solveTraj(np.copy(new_anchor_point), dt)  # solve for new trajectory
     pos_and_vel = np.vstack((plot_traj[1:].T, traj_dot_arr.T))
     new_traj = [pos_and_vel]
+
 
 
     return new_traj, new_gmm, anchor_arr, new_anchor_point
