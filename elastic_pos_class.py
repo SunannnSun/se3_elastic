@@ -14,7 +14,7 @@ def _rearrange_clusters(Prior, Mu, Sigma, att):
         "Mu": Mu[:, idx],
         "Sigma": Sigma[idx, :, :]
     }
-    
+
     return ds_gmm
 
 
@@ -40,6 +40,7 @@ class elastic_pos_class:
 
         self.old_gmm_struct = _rearrange_clusters(Prior, Mu, Sigma, p_att)
 
+        self.p_att = p_att
 
 
     def _geo_constr(self):
@@ -50,7 +51,7 @@ class elastic_pos_class:
         v3 = np.cross(v1, v2)
         R_s = np.column_stack((v1, v2, v3))
 
-        u1 = self.p_in[-1] - self.p_in[-25]
+        u1 = self.p_in[-1] - self.p_in[-100]
         u1 /= np.linalg.norm(u1)
         u2 = np.cross(u1, np.array([0, 1, 0]))
         u3 = np.cross(u1, u2)
@@ -76,4 +77,5 @@ class elastic_pos_class:
         self._geo_constr()
         traj_data, gmm_struct, old_anchor, new_anchor = start_adapting([self.data.T], self.old_gmm_struct, self.T_s, self.T_e)
 
+        gmm_struct['Mu'][:, -1] = self.p_att # move the last Gaussian mean to attractor
         return traj_data, self.old_gmm_struct ,gmm_struct, old_anchor, new_anchor

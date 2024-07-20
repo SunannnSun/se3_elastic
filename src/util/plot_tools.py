@@ -27,11 +27,11 @@ def demo_vs_adjust(demo, adjust, old_anchor, new_anchor, q_in, new_ori):
     ax.scatter(demo[0, 0], demo[0, 1], demo[0, 2], 'o', facecolors='none', edgecolors='magenta',linewidth=2,  s=100, label="Initial")
     ax.scatter(demo[-1, 0], demo[-1, 1], demo[-1, 2], marker=(8, 2, 0), color='k',  s=100, label="Target")
 
-    # for i in range(old_anchor.shape[0]):
-    #     ax.scatter(old_anchor[i, 0], old_anchor[i, 1], old_anchor[i, 2], 'o', facecolors='none', edgecolors='black',linewidth=2,  s=100)
+    for i in range(old_anchor.shape[0]):
+        ax.scatter(old_anchor[i, 0], old_anchor[i, 1], old_anchor[i, 2], 'o', facecolors='none', edgecolors='black',linewidth=2,  s=100)
 
-    # for i in range(new_anchor.shape[0]):
-    #     ax.scatter(new_anchor[i, 0], new_anchor[i, 1], new_anchor[i, 2], 'o', facecolors='none', edgecolors='red',linewidth=2,  s=100)
+    for i in range(new_anchor.shape[0]):
+        ax.scatter(new_anchor[i, 0], new_anchor[i, 1], new_anchor[i, 2], 'o', facecolors='none', edgecolors='red',linewidth=2,  s=100)
 
     colors = ("#FF6666", "#005533", "#1199EE")  # Colorblind-safe RGB
     x_min, x_max = ax.get_xlim()
@@ -49,8 +49,8 @@ def demo_vs_adjust(demo, adjust, old_anchor, new_anchor, q_in, new_ori):
 
     for i in np.linspace(0, len(new_ori), num=10, endpoint=False, dtype=int):
         r = new_ori[i]
-        # loc = adjust[i, :]
-        loc = demo[i, :]
+        loc = adjust[i, :]
+        # loc = demo[i, :]
 
         for j, (axis, c) in enumerate(zip((ax.xaxis, ax.yaxis, ax.zaxis),
                                             colors)):

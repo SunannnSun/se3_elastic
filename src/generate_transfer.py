@@ -53,6 +53,7 @@ def start_adapting(traj, gmm, target_start_pose, target_end_pose, dt=None, scale
         start_point += np.average(traj[l][:dim, :5], axis=1) / L
         end_point +=np.average(traj[l][:dim, -5:], axis=1) / L
 
+    # anchor_arr = get_joints(mu, sigma, end_point, start_point)
     anchor_arr = get_joints(mu, sigma, end_point, start_point)[::-1]  # reverse anchor from the beginning to the end
     pi = pi[::-1]    # reverse mu, sigma, and pi, go from the beginning to the end
     mu = mu[::-1]
